@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!-- bean id为userDao的类为UserDaoMySqlImpl，如果需要修改，直接修改class即可修改该bean的实现类，比如com.seas.SpringCore.dao.UserDaoOrecalImpl -->
+    <bean id="userDao" class="com.seas.SpringCore.dao.UserDaoMySqlImpl"/>
+    
+    <!-- Spring使用id, name, alias标志Bean 都必须在 IoC 容器里唯一 -->
+    <!--给 bean 指定 id-->
+    <bean id="idA" class="com.seas.SpringCore.beans.User">
+    	<property name="userName" value="seas"/>
+    </bean>
+    
+    <!--bean 可以有 name，可以有多个 name-->
+     <bean id="idB" name="nameA,nameB" class="com.seas.SpringCore.beans.User">
+    	<property name="userName" value="seas"/>
+    </bean>
+    
+    <!--可以给 bean 指定别名-->
+    <alias name="nameA" alias="aliasA"/>
+    
+    <!--没有指定 id 和 name，则自动生成 id-->
+    <bean class="com.seas.SpringCore.beans.User">
+        <property name="userName" value="seas"/>
+    </bean>
+    
+<!-- =================== Setter注入 =================== -->
+    
+    <bean id="user" class="com.seas.SpringCore.beans.User">
+    	<property name="userName" value="seas"/>  <!-- attribute的注入方式 --><!-- 调用User类的setUsername方法 -->
+    	<property name="password">  <!-- element的注入方式 -->
+    		<value>123456</value>
+    	</property>
+    	<property name="address" ref="address"/> <!-- 找到标识为address（可以是id，name，alias）的bean，然后调用setAddress方法  -->
+    	<!-- <property name="address">   
+    		<ref bean="address"></ref>
+    	</property> -->  <!-- ref使用element的注入方式 -->
+    </bean>
+    <bean id="address" class="com.seas.SpringCore.beans.Address">
+    	<property name="country" value="China"/>
+    	<property name="province" value="ShanDong"/>
+    	<property name="street" value="SongLing"/>
+    </bean>
+    
+    <!-- 注入匿名对象 -->
+    <bean id="anon-user" class="com.seas.SpringCore.beans.User">
+	   <property name="userName" value="Alice"/>
+	   <property name="password" value="Passw0rd"/>
+	   <property name="address">
+	       <bean class="com.seas.SpringCore.beans.Address">
+	           <property name="country" value="Germany"/>
+	           <property name="province" value="Braunschweig"/>
+	           <property name="street" value="Wiesenstrasse"/>
+	       </bean>
+	   </property>
+	</bean>
+
+<!-- =================== Constructor注入 =================== -->
+
+<!-- 	Customer中有按照数据对照的构造函数public Customer(String name, int age, String phone)  -->
+	<bean id="customer" class="com.seas.SpringCore.beans.Customer">
+		<constructor-arg type="java.lang.String" value="seas"/>
+		<constructor-arg type="int" value="40"/>
+		<constructor-arg type="java.lang.String" value="123456789"/>
+	</bean>
+	
+	<!-- 注入Collection -->
+	<bean id="collectionHolder" class="com.seas.SpringCore.beans.CollectionHolder">
+		<property name="list">
+			<list>  <!-- 表示是list -->
+				<value>Gut</value>
+				<value>Good</value>
+				<value>Bad</value>
+			</list>
+		</property>
+		
+		<!-- 注入set -->
+		<property name="set">
+	       <set> <!--表示是 set-->
+	           <value>Gut</value>
+	           <value>Good</value>
+	           <value>没问题</value>
+	       </set>
+	   </property>
+	   
+	   <!-- 注入map -->
+	   <property name="map">
+	       <map> <!--表示是 map-->
+	           <entry key="German" value="Gut"/>
+	           <entry key="English" value="Good"/>
+	           <entry key="Chinese" value="没问题"/>
+	
+	           <entry key="user" value-ref="user"/>
+	           <entry key="customer">
+	               <bean class="com.seas.SpringCore.beans.User">
+	                    <property name="userName" value="seas"/>
+	               </bean>
+	           </entry>
+	       </map>
+	   </property>
+	   
+	   <!-- 注入props -->
+	   <property name="prop">
+	       <props> <!--表示是 properties-->
+	           <prop key="German">Gut</prop> <!--只能是字符串，不能是 ref, bean-->
+	           <prop key="English">Good</prop>
+	           <prop key="Chinese">没问题</prop>
+	       </props>
+	   </property>
+	</bean>	
+	
+	<!-- =================== factoryBean注入 =================== -->
+	
+	<!-- 可用于复杂bean的注入 -->
+	 <!-- bean 的class不是User对象，而是User的FactoryBean，它会调用UserFactoryBean的getObject方法 -->
+	<bean id="userFactory" class="com.seas.SpringCore.beans.factory.UserFactoryBean">
+		<property name="userName" value="seascheng"/>
+		<property name="password" value="654321"/>
+	 </bean>
+	 
+	 	<!-- =================== Property Editor 注入 =================== -->
+	 
+	 <!-- 给 value 赋值一个字符串，Spring 自动的把这个字符串转换为对象 -->
+	 <!-- bean 的class不是User对象，而是User的FactoryBean，它会调用UserFactoryBean的getObject方法 -->
+	<bean class="org.springframework.beans.factory.config.CustomEditorConfigurer">
+		 <property name="customEditors">
+            <map>
+                <!--Key 是要生成对象的类名，Value 是 Editor 的类名-->
+                <entry key="com.seas.SpringCore.beans.Address" value="com.seas.SpringCore.beans.editor.AddressEditor"/>
+            </map>
+        </property>
+	 </bean>
+	 
+	 <bean id="propertyEditorUser" class="com.seas.SpringCore.beans.User">
+        <property name="userName" value="Alice"/>
+        <property name="password" value="Passw0rd"/>
+        <!--Spring 会把字符串 "2|China|BeiJing|WangJin" 自动的转换为 Address 的对象-->
+        <property name="address" value="2|China|BeiJing|WangJin"/>
+    </bean>
+    
+    <!-- =================== 多个Bean配置文件 =============  -->
+    <import resource="classpath:spring-beans-annotation.xml"/>
+    <import resource="classpath:spring-beans-quartz.xml"/>
+    
+   <!-- =================== Property-Placeholder   ============= -->
+   <!-- 把key/value配置到单独的propertes文件中 -->
+    <context:property-placeholder location="classpath:*.properties" ignore-unresolvable="true"/>
+    <bean id="propertyAddress" class="com.seas.SpringCore.beans.Address">
+        <property name="country" value="${country}"/>
+        <property name="province" value="${province}"/>
+    </bean>
+    	
+</beans>
